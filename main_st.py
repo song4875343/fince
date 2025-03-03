@@ -219,7 +219,7 @@ def draw_kline(data):
     ax.set_xticklabels(last_three_days['date'].values, rotation=0)  # 使用日期作为标签
     
     # 设置标题也使用更细的字体
-    ax.set_title(f"{data['name']}({data['code']}) 最近价格走势", 
+    ax.set_title(f"{data['code']}", 
                  fontproperties=font_properties.copy().set_size(title_size))
     
     # 设置坐标轴刻度字体
