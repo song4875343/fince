@@ -1,2 +1,0 @@
-fonts-wqy-microhei
-fonts-noto-cjk 
