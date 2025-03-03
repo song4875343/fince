@@ -5,14 +5,40 @@ import datetime
 import os
 import json
 import matplotlib.font_manager as fm
+from matplotlib import font_manager
+import platform
 
 # 在文件最开始，其他代码之前设置页面配置
 st.set_page_config(layout="wide")
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['Microsoft YaHei',
-                                   'SimHei', 'DejaVu Sans']  # 按优先级尝试字体
-plt.rcParams['axes.unicode_minus'] = False
+# 根据操作系统设置默认字体
+def setup_chinese_font():
+    if platform.system() == "Windows":
+        font_list = ['Microsoft YaHei', 'SimHei']
+    else:
+        # Linux/Mac/Cloud 环境使用更通用的字体
+        font_list = ['WenQuanYi Micro Hei', 'Noto Sans CJK JP', 'Noto Sans CJK SC', 
+                    'Noto Sans CJK TC', 'Heiti TC', 'SimHei', 'DejaVu Sans']
+    
+    # 遍历字体列表，使用第一个可用的字体
+    chinese_font = None
+    for font_name in font_list:
+        try:
+            if any(f.name == font_name for f in font_manager.fontManager.ttflist):
+                chinese_font = font_name
+                break
+        except:
+            continue
+    
+    if chinese_font is None:
+        chinese_font = 'DejaVu Sans'  # 使用默认后备字体
+    
+    plt.rcParams['font.sans-serif'] = [chinese_font] + plt.rcParams['font.sans-serif']
+    plt.rcParams['axes.unicode_minus'] = False
+    return chinese_font
+
+# 替换原来的字体设置代码
+setup_chinese_font()
 
 # 初始化session state
 if 'stock_history' not in st.session_state:
@@ -138,6 +164,15 @@ def draw_kline(data):
         st.error("没有找到交易数据")
         return None
 
+    # 获取当前使用的中文字体
+    current_font = plt.rcParams['font.sans-serif'][0]
+    
+    # 设置字体属性时使用当前字体
+    font_properties = fm.FontProperties(
+        family=current_font,
+        weight='light'
+    )
+
     # 绘制日K线
     for i, (_, row) in enumerate(last_three_days.iterrows()):
         open_price = float(row['open'])
@@ -171,12 +206,6 @@ def draw_kline(data):
             (low, 'L'),
             (close, 'C')
         ]
-
-        # 设置字体属性
-        font_properties = fm.FontProperties(
-            family='Microsoft YaHei',
-            weight='light'  # 使用更细的字重
-        )
 
         # 在绘制OHLC价格标注时使用新的字体属性
         for price, label in ohlc_points:
