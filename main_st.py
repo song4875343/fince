@@ -13,8 +13,6 @@ st.set_page_config(layout="wide")
 
 # 根据操作系统设置默认字体
 def setup_chinese_font():
-
-    
     if platform.system() == "Windows":
         font_list = ['Microsoft YaHei', 'SimHei']
     else:
@@ -37,12 +35,6 @@ def setup_chinese_font():
     
     plt.rcParams['font.sans-serif'] = [chinese_font] + plt.rcParams['font.sans-serif']
     plt.rcParams['axes.unicode_minus'] = False
-    #test
-    font_path = "msyh.ttc"  # 字体文件路径
-    font_prop = font_manager.FontProperties(fname=font_path)
-    font_prop = font_manager.FontProperties(fname=font_path)
-    plt.rcParams["font.family"] = font_prop.get_name()
-    #test end
     return chinese_font
 
 # 替换原来的字体设置代码
