@@ -210,9 +210,9 @@ def draw_kline(data):
     
     # 调整图表边距
     if is_mobile:
-        plt.tight_layout(pad=0.5)  # 移动设备使用更小的边距
+        plt.tight_layout(pad=0.1)  # 移动设备使用更小的边距
     else:
-        plt.tight_layout(pad=2)
+        plt.tight_layout(pad=4)
     
     return fig
 
