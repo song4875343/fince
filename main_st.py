@@ -4,9 +4,10 @@ import baostock as bs
 import datetime
 import os
 import json
+import matplotlib.font_manager as fm
 
 # 设置中文字体
-plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']  # 按优先级尝试字体
 plt.rcParams['axes.unicode_minus'] = False
 
 # 初始化session state
@@ -111,8 +112,21 @@ def get_stock_data(code, end_date):
         bs.logout()
 
 def draw_kline(data):
-    # 调整图表尺寸为原来的80%，但保持DPI较高以确保清晰度
-    fig = plt.figure(figsize=(7, 3.8), dpi=400)  # 增加DPI以提高清晰度
+    # 使用 session state 中的移动设备模式设置
+    is_mobile = st.session_state.get('is_mobile', False)
+    
+    # 根据设备类型调整图表大小和字体大小
+    if is_mobile:
+        fig = plt.figure(figsize=(2.8, 1.52), dpi=400)
+        font_size = 4  # 移动设备上的字体大小
+        title_size = 6
+        marker_size = 2
+    else:
+        fig = plt.figure(figsize=(7, 3.8), dpi=400)
+        font_size = 8  # 桌面设备上的字体大小
+        title_size = 10
+        marker_size = 4
+    
     ax = fig.add_subplot(111)
     
     # 获取最近的数据（最多3天）
@@ -159,10 +173,10 @@ def draw_kline(data):
         
         for price, label in ohlc_points:
             # 绘制圆点
-            ax.plot(i+1, price, 'o', color='blue', markersize=4)
+            ax.plot(i+1, price, 'o', color='blue', markersize=marker_size)
             # 添加价格标注
             ax.text(i+1 + 0.1, price, f'{price:.2f}', 
-                   color='blue', va='center', ha='left', fontsize=8)
+                   color='blue', va='center', ha='left', fontsize=font_size)
         
         # 为每天绘制独立的支撑位和压力位线条
         lines = [
@@ -185,18 +199,20 @@ def draw_kline(data):
                    color=line_color, linestyle='--', alpha=0.5)
             # 添加标签
             ax.text(x_end + 0.1, price, f'{label}: {price:.2f}', 
-                   color=line_color, va='center', ha='left', fontsize=8)
+                   color=line_color, va='center', ha='left', fontsize=font_size)
 
-    ax.set_title(f"{data['name']}({data['code']}) 最近价格走势")
-    ax.grid(True, linestyle='--', alpha=0.3)
+    # 设置标题
+    ax.set_title(f"{data['name']}({data['code']}) 最近价格走势", 
+                 fontfamily='Microsoft YaHei', fontsize=title_size)
     
-    # 设置x轴刻度和标签
-    ax.set_xticks(range(1, num_days + 1))  # 根据实际天数设置刻度
-    ax.set_xticklabels(last_three_days['date'].values, rotation=0)  # 使用.values确保获取数组
+    # 设置x轴标签字体大小
+    ax.tick_params(axis='both', which='major', labelsize=font_size)
     
-    # 调整图表边距和显示范围
-    plt.tight_layout(pad=2)
-    ax.set_xlim(0.2, num_days + 1.0)  # 根据实际天数调整显示范围
+    # 调整图表边距
+    if is_mobile:
+        plt.tight_layout(pad=0.5)  # 移动设备使用更小的边距
+    else:
+        plt.tight_layout(pad=2)
     
     return fig
 
@@ -250,7 +266,10 @@ with st.sidebar:
         else:
             st.error("选择的日期没有交易数据")
 
-# 主内容区只显示图表
+    st.header("显示设置")
+    is_mobile = st.checkbox("移动设备模式", value=False, key='is_mobile')
+
+# 主内容区显示图表
 if 'fig' in locals():
     st.markdown(
         """
@@ -258,9 +277,23 @@ if 'fig' in locals():
             .block-container {
                 padding-top: 1rem !important;
             }
+            @media (max-width: 768px) {
+                /* 移动设备样式 */
+                .element-container {
+                    width: 40vw !important;
+                    margin: auto;
+                }
+            }
         </style>
         """,
         unsafe_allow_html=True,
     )
-    st.pyplot(fig, use_container_width=False)  # 禁用容器宽度自适应
+    
+    # 根据移动设备模式选择显示方式
+    if st.session_state.get('is_mobile', False):
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.pyplot(fig, use_container_width=True)
+    else:
+        st.pyplot(fig, use_container_width=False)
 
