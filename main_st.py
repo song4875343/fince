@@ -239,12 +239,30 @@ if __name__ == '__main__':
     # 使用sidebar进行所有设置
     with st.sidebar:
         st.header("股票信息")
-        code = st.text_input("股票代码", key='stock_code_input', 
-                        value=st.session_state.selected_code)
-        st.session_state.selected_code = code
+        # 修改输入框的处理方式
+        code = st.text_input("股票代码", key='stock_code_input')
+        
+        # 当输入框的值改变时，更新 selected_code
+        if code != st.session_state.get('selected_code', ''):
+            st.session_state.selected_code = code
+            # 清除上一次的图表
+            if 'current_fig' in st.session_state:
+                del st.session_state.current_fig
         
         date = st.date_input("日期", datetime.date.today(), key='date_input')
         
+        # 添加获取数据按钮
+        if st.button("获取数据") or (code and 'current_fig' not in st.session_state):
+            if code:
+                data = get_stock_data(code, str(st.session_state.date_input))
+                if data and not data['daily'].empty:
+                    update_stock_history(data['code'], data['name'])
+                    save_stock_list()
+                    fig = draw_kline(data)
+                    if fig:
+                        st.session_state.current_fig = fig
+            else:
+                st.error("请输入股票代码")
         
         st.header("历史记录")
         selected = st.selectbox(
@@ -254,24 +272,23 @@ if __name__ == '__main__':
             key='history_selector'
         )
         
-        # 直接在选择后进行处理
-        if selected:
+        # 历史记录选择处理
+        if selected and st.session_state.get('last_selected') != selected['code']:
+            st.session_state.last_selected = selected['code']  # 记录最后选择的股票
             st.session_state.selected_code = selected['code'].replace('sh.', '').replace('sz.', '')
             data = get_stock_data(st.session_state.selected_code, str(st.session_state.date_input))
-            if data and not data['daily'].empty:  # 确保有数据
+            if data and not data['daily'].empty:
                 update_stock_history(data['code'], data['name'])
                 save_stock_list()
                 fig = draw_kline(data)
-                if fig:  # 只有在成功创建图表时才显示
-                    st.pyplot(fig)
-            else:
-                st.error("选择的日期没有交易数据")
+                if fig:
+                    st.session_state.current_fig = fig
 
         st.header("显示设置")
         is_mobile = st.checkbox("移动设备模式", value=True, key='is_mobile')
 
     # 主内容区显示图表
-    if 'fig' in locals():
+    if 'current_fig' in st.session_state:
         # 根据移动设备模式设置不同的CSS样式
         if st.session_state.get('is_mobile', False):
             st.markdown(
@@ -279,7 +296,7 @@ if __name__ == '__main__':
                 <style>
                     .block-container {
                         padding-top: 1.5rem !important;
-                        max-width: 40rem !important;  /* 限制移动设备时的最大宽度 */
+                        max-width: 40rem !important;
                         margin: auto !important;
                     }
                     .element-container {
@@ -289,10 +306,7 @@ if __name__ == '__main__':
                 """,
                 unsafe_allow_html=True,
             )
-            # # 使用列布局来控制图表宽度
-            # col1, col2, col3 = st.columns([1, 3, 1])
-            # with col2:
-            st.pyplot(fig, use_container_width=True)
+            st.pyplot(st.session_state.current_fig, use_container_width=True)
         else:
             st.markdown(
                 """
@@ -304,5 +318,5 @@ if __name__ == '__main__':
                 """,
                 unsafe_allow_html=True,
             )
-            st.pyplot(fig, use_container_width=False)
+            st.pyplot(st.session_state.current_fig, use_container_width=False)
 
