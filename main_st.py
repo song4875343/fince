@@ -6,6 +6,9 @@ import os
 import json
 import matplotlib.font_manager as fm
 
+# 在文件最开始，其他代码之前设置页面配置
+st.set_page_config(layout="wide")
+
 # 设置中文字体
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']  # 按优先级尝试字体
 plt.rcParams['axes.unicode_minus'] = False
@@ -171,12 +174,20 @@ def draw_kline(data):
             (close, 'C')
         ]
         
+        # 设置字体属性
+        font_properties = fm.FontProperties(
+            family='Microsoft YaHei', 
+            weight='light'  # 使用更细的字重
+        )
+        
+        # 在绘制OHLC价格标注时使用新的字体属性
         for price, label in ohlc_points:
             # 绘制圆点
             ax.plot(i+1, price, 'o', color='blue', markersize=marker_size)
-            # 添加价格标注
+            # 添加价格标注，使用更细的字体
             ax.text(i+1 + 0.1, price, f'{price:.2f}', 
-                   color='blue', va='center', ha='left', fontsize=font_size)
+                   color='blue', va='center', ha='left', 
+                   fontsize=font_size, fontproperties=font_properties)
         
         # 为每天绘制独立的支撑位和压力位线条
         lines = [
@@ -193,20 +204,24 @@ def draw_kline(data):
         x_start = i + 1 - 0.2
         x_end = i + 1 + 0.2
         
+        # 在绘制支撑/压力线标签时也使用新的字体属性
         for price, label, line_color in lines:
             # 绘制短线
             ax.plot([x_start, x_end], [price, price], 
                    color=line_color, linestyle='--', alpha=0.5)
-            # 添加标签
+            # 添加标签，使用更细的字体
             ax.text(x_end + 0.1, price, f'{label}: {price:.2f}', 
-                   color=line_color, va='center', ha='left', fontsize=font_size)
+                   color=line_color, va='center', ha='left', 
+                   fontsize=font_size, fontproperties=font_properties)
 
-    # 设置标题
-    ax.set_title(f"{data['name']}({data['code']}) 最近价格走势", 
-                 fontfamily='Microsoft YaHei', fontsize=title_size)
+    # 设置标题也使用更细的字体
+    ax.set_title(f"{data['code']}", 
+                 fontproperties=font_properties.copy().set_size(title_size))
     
-    # 设置x轴标签字体大小
+    # 设置坐标轴刻度字体
     ax.tick_params(axis='both', which='major', labelsize=font_size)
+    for label in ax.get_xticklabels() + ax.get_yticklabels():
+        label.set_fontproperties(font_properties)
     
     # 调整图表边距
     if is_mobile:
@@ -216,84 +231,78 @@ def draw_kline(data):
     
     return fig
 
-# 页面布局代码
-st.set_page_config(layout="wide")
-load_stock_list()
+if __name__ == '__main__':
 
-# 使用sidebar进行所有设置
-with st.sidebar:
-    st.header("股票信息")
-    code = st.text_input("股票代码", key='stock_code_input', 
-                       value=st.session_state.selected_code)
-    st.session_state.selected_code = code
-    
-    date = st.date_input("日期", datetime.date.today(), key='date_input')
-    
-    # st.header("价格输入")
-    # open_price = st.number_input("开盘价", key='open')
-    # high = st.number_input("最高价", key='high')
-    # low = st.number_input("最低价", key='low')
-    # close = st.number_input("收盘价", key='close')
-    
-    # if st.button("计算枢轴点"):
-    #     result = calculate_pivot_points(high, low, close, open_price)
-    #     st.write(f"枢轴点(P): {result['pivot']:.2f}")
-    #     st.write(f"压力位1(R1): {result['r1']:.2f}")
-    #     st.write(f"压力位2(R2): {result['r2']:.2f}")
-    #     st.write(f"压力位3(R3): {result['r3']:.2f}")
-    #     st.write(f"支撑位1(S1): {result['s1']:.2f}")
-    #     st.write(f"支撑位2(S2): {result['s2']:.2f}")
-    #     st.write(f"支撑位3(S3): {result['s3']:.2f}")
-    
-    st.header("历史记录")
-    selected = st.selectbox(
-        "选择历史股票",
-        options=st.session_state.stock_history,
-        format_func=lambda x: f"{x['name']}({x['code']})",
-        key='history_selector'
-    )
-    
-    # 直接在选择后进行处理
-    if selected:
-        st.session_state.selected_code = selected['code'].replace('sh.', '').replace('sz.', '')
-        data = get_stock_data(st.session_state.selected_code, str(st.session_state.date_input))
-        if data and not data['daily'].empty:  # 确保有数据
-            update_stock_history(data['code'], data['name'])
-            save_stock_list()
-            fig = draw_kline(data)
-            if fig:  # 只有在成功创建图表时才显示
-                st.pyplot(fig)
-        else:
-            st.error("选择的日期没有交易数据")
+    # 页面布局代码
+    load_stock_list()
 
-    st.header("显示设置")
-    is_mobile = st.checkbox("移动设备模式", value=False, key='is_mobile')
+    # 使用sidebar进行所有设置
+    with st.sidebar:
+        st.header("股票信息")
+        code = st.text_input("股票代码", key='stock_code_input', 
+                        value=st.session_state.selected_code)
+        st.session_state.selected_code = code
+        
+        date = st.date_input("日期", datetime.date.today(), key='date_input')
+        
+        
+        st.header("历史记录")
+        selected = st.selectbox(
+            "选择历史股票",
+            options=st.session_state.stock_history,
+            format_func=lambda x: f"{x['name']}({x['code']})",
+            key='history_selector'
+        )
+        
+        # 直接在选择后进行处理
+        if selected:
+            st.session_state.selected_code = selected['code'].replace('sh.', '').replace('sz.', '')
+            data = get_stock_data(st.session_state.selected_code, str(st.session_state.date_input))
+            if data and not data['daily'].empty:  # 确保有数据
+                update_stock_history(data['code'], data['name'])
+                save_stock_list()
+                fig = draw_kline(data)
+                if fig:  # 只有在成功创建图表时才显示
+                    st.pyplot(fig)
+            else:
+                st.error("选择的日期没有交易数据")
 
-# 主内容区显示图表
-if 'fig' in locals():
-    st.markdown(
-        """
-        <style>
-            .block-container {
-                padding-top: 1rem !important;
-            }
-            @media (max-width: 768px) {
-                /* 移动设备样式 */
-                .element-container {
-                    width: 40vw !important;
-                    margin: auto;
-                }
-            }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-    
-    # 根据移动设备模式选择显示方式
-    if st.session_state.get('is_mobile', False):
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
+        st.header("显示设置")
+        is_mobile = st.checkbox("移动设备模式", value=True, key='is_mobile')
+
+    # 主内容区显示图表
+    if 'fig' in locals():
+        # 根据移动设备模式设置不同的CSS样式
+        if st.session_state.get('is_mobile', False):
+            st.markdown(
+                """
+                <style>
+                    .block-container {
+                        padding-top: 1.5rem !important;
+                        max-width: 40rem !important;  /* 限制移动设备时的最大宽度 */
+                        margin: auto !important;
+                    }
+                    .element-container {
+                        width: 100% !important;
+                    }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
+            # # 使用列布局来控制图表宽度
+            # col1, col2, col3 = st.columns([1, 3, 1])
+            # with col2:
             st.pyplot(fig, use_container_width=True)
-    else:
-        st.pyplot(fig, use_container_width=False)
+        else:
+            st.markdown(
+                """
+                <style>
+                    .block-container {
+                        padding-top: 1rem !important;
+                    }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.pyplot(fig, use_container_width=False)
 
