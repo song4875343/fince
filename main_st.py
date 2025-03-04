@@ -174,7 +174,7 @@ def draw_kline(data):
 
         # 设置字体属性
         font_properties = fm.FontProperties(
-            family='Microsoft YaHei',
+            fname='NotoSansCJK-Light.otf',
             weight='light'  # 使用更细的字重
         )
 
