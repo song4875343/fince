@@ -120,7 +120,7 @@ def draw_kline(data):
     if is_mobile:
         fig = plt.figure(figsize=(5, 3), dpi=400)
         font_size = 9  # 桌面设备上的字体大小
-        title_size = 10
+        title_size = 11
         marker_size = 3
     else:
         fig = plt.figure(figsize=(8, 4), dpi=400)
@@ -221,9 +221,9 @@ def draw_kline(data):
     font_properties_title.set_weight('bold')  # 设置字体加粗
     font_properties_title.set_size(title_size)
     
-    ax.set_title(f"{data['code']}", 
+    ax.set_title(f"{data['name']}({data['code']})近三日数据", 
                  fontproperties=font_properties_title,
-                 pad=20)  # 增加标题和图表的间距
+                 pad=10)  # 增加标题和图表的间距
 
     # 设置坐标轴刻度字体
     ax.tick_params(axis='both', which='major', labelsize=font_size)
