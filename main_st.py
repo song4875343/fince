@@ -238,7 +238,7 @@ def draw_kline(data):
     else:
         print("pc")
         ax.set_aspect(1)
-        plt.tight_layout(pad=4)  # 减小 pad 值，让标题有更多空间
+        plt.tight_layout(pad=5)  # 减小 pad 值，让标题有更多空间
 
     return fig
 
@@ -308,10 +308,16 @@ if __name__ == '__main__':
             st.markdown(
                 """
                 <style>
-                    .block-container {
-                        padding-top: 1.5rem !important;
+                    /* 修改主内容区容器 */
+                    .main .block-container {
+                        padding-top: 10rem !important;
                         max-width: 40rem !important;
                         margin: auto !important;
+                    }
+                    /* 单独固定侧边栏位置 */
+                    [data-testid="stSidebar"] {
+                        top: 0 !important;
+                        padding-top: 2rem !important;
                     }
                     .element-container {
                         width: 100% !important;
@@ -326,7 +332,7 @@ if __name__ == '__main__':
                 """
                 <style>
                     .block-container {
-                        padding-top: 4rem !important;
+                        padding-top: 1.5rem !important;
                     }
                 </style>
                 """,
