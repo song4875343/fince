@@ -166,10 +166,10 @@ def draw_kline(data):
 
         # 标注OHLC价格和圆点
         ohlc_points = [
-            (open_price, 'O'),
-            (high, 'H'),
-            (low, 'L'),
-            (close, 'C')
+            (open_price, 'O', 'center'),    # 底部平齐
+            (high, 'H', 'bottom'),          # 中间
+            (low, 'L', 'top'),           # 中间
+            (close, 'C', 'center')             # 顶部平齐
         ]
 
         # 设置字体属性
@@ -179,13 +179,14 @@ def draw_kline(data):
         )
 
         # 在绘制OHLC价格标注时使用新的字体属性
-        for price, label in ohlc_points:
+        for price, label, position in ohlc_points:
             # 绘制圆点
             ax.plot(i + 1, price, 'o', color='blue', markersize=marker_size)
-            # 添加价格标注，使用更细的字体
-            ax.text(i + 1 + 0.1, price, f'{price:.2f}',
-                    color='blue', va='center', ha='left',
-                    fontsize=font_size, fontproperties=font_properties)
+            # 添加价格标注
+              
+            ax.text(i + 1 + 0.1, price , f'{price:.2f}',
+                   color='blue', va=position, ha='left',
+                   fontsize=font_size, fontproperties=font_properties)
 
         # 为每天绘制独立的支撑位和压力位线条
         lines = [
