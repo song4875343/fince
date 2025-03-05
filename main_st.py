@@ -311,7 +311,7 @@ if __name__ == '__main__':
                 <style>
                     /* 修改主内容区容器 */
                     .main .block-container {
-                        padding-top: 10rem !important;
+                        padding-top: 8rem !important;
                         max-width: 40rem !important;
                         margin: auto !important;
                     }
