@@ -309,16 +309,20 @@ if __name__ == '__main__':
             st.markdown(
                 """
                 <style>
-                    /* 修改主内容区容器 */
+                    /* 修改主内容区容器,经测试这样处理也有效样式类前面一部分的名字 */
                     .main .block-container {
                         padding-top: 8rem !important;
                         max-width: 40rem !important;
                         margin: auto !important;
                     }
-                    /* 单独固定侧边栏位置 */
+                    /* 单独固定侧边栏位置,经测试这样处理也有效 */
                     [data-testid="stSidebar"] {
                         top: 0 !important;
-                        padding-top: 2rem !important;
+                        padding-top: 0.1rem !important;
+                    }
+                    /* 侧边栏更高层次的位置,经测试这样处理也有效 */
+                    [data-testid="stSidebarUserContent"] {
+                        padding: 4rem 1.5rem !important;
                     }
                     .element-container {
                         width: 100% !important;
@@ -334,6 +338,15 @@ if __name__ == '__main__':
                 <style>
                     .block-container {
                         padding-top: 1.5rem !important;
+                    }
+                    /* 单独固定侧边栏位置,经测试这样处理也有效 */
+                    [data-testid="stSidebar"] {
+                        top: 0 !important;
+                        padding-top: 0.1rem !important;
+                    }
+                    /* 侧边栏更高层次的位置,经测试这样处理也有效 */
+                    [data-testid="stSidebarUserContent"] {
+                        padding: 3.5rem 1.5rem !important;
                     }
                 </style>
                 """,
